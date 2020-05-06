@@ -1,6 +1,6 @@
 # Zabbix Export Events
 
-Exporta os itens monitorados de cada Servidor separando por grupo em abas numa pasta do Excel.
+Exporta os alertas gerados no Zabbix baseado no periodo e grupos selecionados.
 
 ## Requisitos
 É necessário ter os pacotes pyzabbix, openpyxl, argparse, progress e pyfiglet
