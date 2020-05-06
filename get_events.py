@@ -337,16 +337,16 @@ if args["email"]:
     from email import encoders
     import smtplib
 
-    email_user = "suportenoc@quality.com.br"  # Account used for send e-mail
-    password = "wrepE6ef"  # Account passowrd used to send e-mail
-    smtp_adrress = "webmail.quality.com.br"  # SMTP Server
+    email_user = "account@company.com"  # Account used for send e-mail
+    password = "password"  # Account passowrd used to send e-mail
+    smtp_adrress = "smtp.company.com"  # SMTP Server
     email_send = args["email"]  # E-mail to receve e-mail
 
     msg = MIMEMultipart()
 
     message = "Relatorio {} gerado! Segue em anexo".format(NOME)
 
-    msg["From"] = "SuporteNOC <{}>".format(email_user)
+    msg["From"] = "Account Name <{}>".format(email_user)
     msg["To"] = email_send
     msg["Subject"] = "Relatorio de alertas"
 
@@ -364,14 +364,12 @@ if args["email"]:
     server = smtplib.SMTP(smtp_adrress, 587)
     server.starttls()
     server.login(email_user, password)
-    print("\n--> Logado no servidor de email")
 
     server.sendmail(msg["From"], msg["To"], msg.as_string())
-    print("\n--> Email enviado")
 
     server.quit()
 
-    print("\nRelatorio {} gerado e enviado com sucesso!".format(NOME))
+    print("\n--> Relatorio {} gerado e enviado com sucesso!".format(NOME))
 
 else:
-    print("\nRelatorio {} gerado com sucesso!".format(NOME))
+    print("\n--> Relatorio {} gerado com sucesso!".format(NOME))
