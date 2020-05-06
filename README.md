@@ -1,8 +1,8 @@
-#Zabbix Export Events
+# Zabbix Export Events
 
 Exporta os itens monitorados de cada Servidor separando por grupo em abas numa pasta do Excel.
 
-##Requisitos
+## Requisitos
 É necessário ter os pacotes pyzabbix, openpyxl, argparse, progress e pyfiglet
 
 `pip install pyzabbix openpyxl argparse pyfiglet progress`
@@ -10,7 +10,7 @@ Exporta os itens monitorados de cada Servidor separando por grupo em abas numa p
 
 ------------
 
-##Exemplo
+## Exemplo
 É obrigatório passar o servidor, login e senha do qual os dados serão extraídos.
 
 `python .\get_events.py -s http://localhost/zabbix -u Admin -p zabbix`
@@ -37,7 +37,7 @@ Com a flag --ack você pode selecionar apenas os eventos que receberam acknowleg
 
 ------------
 
-####Configuração do envio de email
+#### Configuração do envio de email
 
 O Script também pode realizar o envio do relatório gerado para um endereço de email.
 
