@@ -1,5 +1,7 @@
 # Zabbix Export Events
 
+![]https://img.shields.io/badge/Zabbix%20API-4-green
+
 Exporta os alertas gerados no Zabbix baseado no periodo e grupos selecionados.
 
 ## Requisitos
