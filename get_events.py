@@ -231,13 +231,15 @@ for e in zapi.event.get(
             output="extend", triggerids=e["objectid"], selectGroups=["name"]
         ):
             data = time.strftime("%d/%m/%Y %H:%M:%S", time.localtime(int(e["clock"])))
-            fim = zapi.event.get(output=["clock"], eventids=e["r_eventid"])
+            fim = zapi.event.get(output=["clock", "value"], eventids=e["r_eventid"])
             if len(fim) > 0:
                 data_fim = time.strftime(
                     "%d/%m/%Y %H:%M:%S", time.localtime(int(fim[0]["clock"]))
                 )
+                sheet.cell(row=row, column=6).value = EVENT[fim[0]["value"]]
             else:
-                data_fim = "N/A"
+                data_fim = ""
+                sheet.cell(row=row, column=6).value = EVENT[e["value"]]
             app = zapi.application.get(
                 output=["name"], itemids=t["functions"][0]["itemid"], limit=1
             )
@@ -251,7 +253,7 @@ for e in zapi.event.get(
                 if len(t["description"]) > Col_Trigger:
                     Col_Trigger = len(t["description"])
                 sheet.cell(row=row, column=5).value = SEV[t["priority"]]
-                sheet.cell(row=row, column=6).value = EVENT[e["value"]]
+                
                 sheet.cell(row=row, column=7).value = h["groups"][0]["name"]
                 if len(h["groups"][0]["name"]) > Col_Grupo:
                     Col_Grupo = len(h["groups"][0]["name"])
