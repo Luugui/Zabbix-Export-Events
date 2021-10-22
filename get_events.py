@@ -122,22 +122,24 @@ def get_events_ids(group, dt_from, dt_till, ack):
             value=1,
             groupids=group,
             select_acknowledges="extend",
-            acknowledged=args["ack"])
+            acknowledged=args["ack"],
+            severities=[4,5])
     else:
         evt = zapi.event.get(
-            output=['objectid'],
+            output="extend",
             time_from=dt_from,
             time_till=dt_till,
             sortfield=["clock"],
             sortorder="ASC",
             value=1,
             groupids=group,
-            select_acknowledges="extend")
+            select_acknowledges="extend",
+            severities=[4,5])
         
     
-    objids = [e['objectid'] for e in evt]
+    
 
-    return objids
+    return evt
 
 
 if args["group"]:
@@ -145,8 +147,7 @@ if args["group"]:
 else:
     grupos = get_group_ids()
 
-for g in zapi.hostgroup.get(output="extend", groupids=grupos):
-    print("--> Grupo selecionado: " + g["name"])
+print(f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Selected {len(grupos)} groups") if len(grupos) > 1 else print(f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Selected {len(grupos)} group")
 
 # CRIANDO PLANILHA
 wb = Workbook()
@@ -236,27 +237,15 @@ Col_Grupo = 0
 Col_App = 0
 Col_Message = 0
 
-print(get_events_ids(grupos, DATA_INICIO, DATA_FIM, args["ack"]))
 
-
-for e in zapi.event.get(
-    output="extend",
-    time_from=DATA_INICIO,
-    time_till=DATA_FIM,
-    sortfield=["clock"],
-    sortorder="ASC",
-    value=1,
-    groupids=grupos,
-    select_acknowledges="extend",
-    acknowledged=args["ack"],
-):
-    for t in tqdm(zapi.trigger.get(
+for e in tqdm(get_events_ids(grupos, DATA_INICIO, DATA_FIM, args["ack"]), ascii=True, desc=f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Extract events"):
+    for t in zapi.trigger.get(
         output="extend",
         triggerids=e["objectid"],
         expandDescription=True,
         min_severity=4,
         selectFunctions="extend",
-    ), ascii=True, desc=f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Extract events"):
+    ):
         for h in zapi.host.get(
             output="extend", triggerids=e["objectid"], selectGroups=["name"]
         ):
