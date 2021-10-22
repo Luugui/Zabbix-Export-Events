@@ -6,10 +6,11 @@ from pyzabbix import ZabbixAPI
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from datetime import date, datetime, timedelta
-from pyfiglet import Figlet
-from progress.bar import FillingSquaresBar
+from tqdm import tqdm
+from colorama import init, Fore
 import argparse, time
 
+init(autoreset=True)
 
 # Coleta de parametros
 parser = argparse.ArgumentParser(description="Extracao de eventos do Zabbix")
@@ -45,8 +46,21 @@ parser.add_argument("-e", "--email", help="Email para envio do relatório")
 parser.add_argument("-l", "--last", type=int, help="Ultimas horas de alertas")
 args = vars(parser.parse_args())
 
-f = Figlet(font="slant")
-print(f.renderText("Zabbix Export Events"))
+
+print(f"""{Fore.GREEN}
+ ______      _     _     _ _____                      _   _____                _       
+|___  /     | |   | |   (_)  ___|                    | | |  ___|              | |      
+   / /  __ _| |__ | |__  _| |____  ___ __   ___  _ __| |_| |____   _____ _ __ | |_ ___ 
+  / /  / _` | '_ \| '_ \| |  __\ \/ / '_ \ / _ \| '__| __|  __\ \ / / _ \ '_ \| __/ __|
+./ /__| (_| | |_) | |_) | | |___>  <| |_) | (_) | |  | |_| |___\ V /  __/ | | | |_\__ \\
+\_____/\__,_|_.__/|_.__/|_\____/_/\_\ .__/ \___/|_|   \__\____/ \_/ \___|_| |_|\__|___/
+                                    | |                                                
+                                    |_|                                                       
+{Fore.WHITE}
+ * Zabbix Export Events
+ * Version: 1.1.0
+ * Author: Luis Amaral
+""")
 
 if args["last"]:
     if args["data_inicio"] or args["data_fim"]:
@@ -73,7 +87,7 @@ if "https" in args["server"]:
     requests.packages.urllib3.disable_warnings()
     zapi.session.verify = False
 zapi.login(args["user"], args["password"])
-print("--> Conectado com sucesso!\n")
+print(f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Connected to Zabbix!")
 
 
 def get_group_ids(group="*"):
@@ -94,6 +108,36 @@ def get_group_ids(group="*"):
             if "Template" not in g["name"]:
                 ids.append(g["groupid"])
     return ids
+
+
+def get_events_ids(group, dt_from, dt_till, ack):
+    
+    if ack:
+       evt = zapi.event.get(
+            output="extend",
+            time_from=dt_from,
+            time_till=dt_till,
+            sortfield=["clock"],
+            sortorder="ASC",
+            value=1,
+            groupids=group,
+            select_acknowledges="extend",
+            acknowledged=args["ack"])
+    else:
+        evt = zapi.event.get(
+            output=['objectid'],
+            time_from=dt_from,
+            time_till=dt_till,
+            sortfield=["clock"],
+            sortorder="ASC",
+            value=1,
+            groupids=group,
+            select_acknowledges="extend")
+        
+    
+    objids = [e['objectid'] for e in evt]
+
+    return objids
 
 
 if args["group"]:
@@ -192,21 +236,7 @@ Col_Grupo = 0
 Col_App = 0
 Col_Message = 0
 
-max = len(
-    zapi.event.get(
-        output=["eventid"],
-        time_from=DATA_INICIO,
-        time_till=DATA_FIM,
-        value=1,
-        groupids=grupos,
-        acknowledged=args["ack"],
-    )
-)
-
-print("\n")
-bar = FillingSquaresBar(
-    "--> Gerado relatorio de eventos!", max=max, suffix="%(percent).1f%% - %(elapsed)ds"
-)
+print(get_events_ids(grupos, DATA_INICIO, DATA_FIM, args["ack"]))
 
 
 for e in zapi.event.get(
@@ -220,13 +250,13 @@ for e in zapi.event.get(
     select_acknowledges="extend",
     acknowledged=args["ack"],
 ):
-    for t in zapi.trigger.get(
+    for t in tqdm(zapi.trigger.get(
         output="extend",
         triggerids=e["objectid"],
         expandDescription=True,
         min_severity=4,
         selectFunctions="extend",
-    ):
+    ), ascii=True, desc=f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Extract events"):
         for h in zapi.host.get(
             output="extend", triggerids=e["objectid"], selectGroups=["name"]
         ):
@@ -302,9 +332,9 @@ for e in zapi.event.get(
 
             row += 1
             eventos += 1
-            bar.next()
+            
 
-bar.finish()
+
 area = sheet.dimensions
 sheet.auto_filter.ref = area
 sheet.column_dimensions["A"].width = 18
@@ -371,7 +401,8 @@ if args["email"]:
 
     server.quit()
 
-    print("\n--> Relatorio {} gerado e enviado com sucesso!".format(NOME))
+    print(f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Relatorio {NOME} gerado e enviado com sucesso!")
 
 else:
-    print("\n--> Relatorio {} gerado com sucesso!".format(NOME))
+    print(f"[{Fore.GREEN}{datetime.now()}{Fore.WHITE}] Relatorio {NOME} gerado com sucesso!")
+
