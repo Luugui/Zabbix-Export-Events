@@ -5,9 +5,9 @@
 Exporta os alertas gerados no Zabbix baseado no periodo e grupos selecionados.
 
 ## Requisitos
-É necessário ter os pacotes pyzabbix, openpyxl, argparse, progress e pyfiglet
+É necessário ter os pacotes pyzabbix, openpyxl, argparse, tqdm
 
-`pip install pyzabbix openpyxl argparse pyfiglet progress`
+`pip install -r requirements.txt`
 
 
 ------------
